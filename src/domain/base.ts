@@ -6,18 +6,6 @@ const createEntity = <Props>(sym: symbol, props: Props) => ({
   ...props,
 });
 
-// const validate = <Schema extends BaseSchema<any, any>>(
-//   schema: Schema,
-//   input: Output<Schema>,
-// ): Either<Error, Output<Schema>> => {
-//   try {
-//     const output = parse(schema, input);
-//     return right(output);
-//   } catch (e) {
-//     return left(e as Error);
-//   }
-// };
-
 const validate =
   <Schema extends BaseSchema<any, any>>(schema: Schema) =>
   (input: Output<Schema>): Either<Error, Output<Schema>> => {
