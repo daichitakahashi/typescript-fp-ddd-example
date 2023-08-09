@@ -1,19 +1,25 @@
-import { UserId, type User, createUser } from './user';
+import { UserId, type User, createUser, changeUserName } from './user';
 import { match } from 'fp-ts/lib/Either';
 import { pipe } from 'fp-ts/lib/function';
 
 const mustFail = <Right>() =>
-  match<Error, Right, void>(
-    (e) => {},
-    (a) => {
+  match<Error, Right, Error>(
+    (e) => e,
+    (a): Error => {
       throw new Error(`unexpected success: ${a}`);
     },
   );
 
-const mustSuccess = <Right>(onRight: (a: Right) => void) =>
-  match<Error, Right, void>((e) => {
-    throw new Error(`unexpected error: ${e}`);
-  }, onRight);
+const mustSuccess = <Right>(onRight?: (a: Right) => void) =>
+  match<Error, Right, Right>(
+    (e) => {
+      throw new Error(`unexpected error: ${e}`);
+    },
+    (user) => {
+      if (onRight) onRight(user);
+      return user;
+    },
+  );
 
 describe('ユーザーID', () => {
   it('作成したユーザーIDが意図した値を持つ', () => {
@@ -62,6 +68,36 @@ describe('ユーザー作成', () => {
     } else {
       it(`ユーザー名の長さが${userName.length}のユーザーを作成することはできない`, () => {
         pipe(user, mustFail());
+      });
+    }
+  });
+});
+
+describe('ユーザー名変更', () => {
+  [
+    { userName: 'aaaa', success: false }, // length=4
+    { userName: 'aaaaa', success: true }, // length=5
+    { userName: 'aaaaaaaaaaaaaaaaaaaa', success: true }, // length=20
+    { userName: 'aaaaaaaaaaaaaaaaaaaaa', success: false }, // length=21
+  ].forEach(({ userName, success }) => {
+    const user = pipe(
+      createUser({
+        name: 'user01',
+      }),
+      mustSuccess(),
+    );
+    const result = pipe(user, changeUserName(userName));
+
+    if (success) {
+      it(`ユーザー名の長さが${userName.length}のユーザーを作成することができる`, () => {
+        pipe(
+          result,
+          mustSuccess((user: User) => expect(user.name).toEqual(userName)),
+        );
+      });
+    } else {
+      it(`ユーザー名の長さが${userName.length}のユーザーを作成することはできない`, () => {
+        pipe(result, mustFail());
       });
     }
   });
