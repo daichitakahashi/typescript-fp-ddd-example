@@ -41,6 +41,7 @@ describe('ユーザー作成', () => {
     pipe(
       createUser({
         name: 'user01',
+        email: 'valid@example.com',
       }),
       mustSuccess((user: User) => {
         expect(user.id).toBeDefined();
@@ -50,23 +51,56 @@ describe('ユーザー作成', () => {
   });
 
   [
-    { userName: 'aaaa', success: false }, // length=4
-    { userName: 'aaaaa', success: true }, // length=5
-    { userName: 'aaaaaaaaaaaaaaaaaaaa', success: true }, // length=20
-    { userName: 'aaaaaaaaaaaaaaaaaaaaa', success: false }, // length=21
-  ].forEach(({ userName, success }) => {
+    { newName: 'aaaa', success: false }, // length=4
+    { newName: 'aaaaa', success: true }, // length=5
+    { newName: 'aaaaaaaaaaaaaaaaaaaa', success: true }, // length=20
+    { newName: 'aaaaaaaaaaaaaaaaaaaaa', success: false }, // length=21
+  ].forEach(({ newName, success }) => {
     const user = createUser({
-      name: userName,
+      name: newName,
+      email: 'valid@example.com',
     });
     if (success) {
-      it(`ユーザー名の長さが${userName.length}のユーザーを作成することができる`, () => {
+      it(`ユーザー名の長さが${newName.length}のユーザーを作成することができる`, () => {
         pipe(
           user,
-          mustSuccess((user: User) => expect(user.name).toEqual(userName)),
+          mustSuccess((created: User) =>
+            expect(created).toMatchObject({
+              name: newName,
+              email: 'valid@example.com',
+            }),
+          ),
         );
       });
     } else {
-      it(`ユーザー名の長さが${userName.length}のユーザーを作成することはできない`, () => {
+      it(`ユーザー名の長さが${newName.length}のユーザーを作成することはできない`, () => {
+        pipe(user, mustFail());
+      });
+    }
+  });
+
+  [
+    { newEmail: 'valid@example.com', success: true },
+    { newEmail: 'invalid_at_example.com', success: false },
+  ].forEach(({ newEmail, success }) => {
+    const user = createUser({
+      name: 'user01',
+      email: newEmail,
+    });
+    if (success) {
+      it(`"${newEmail}"をメールアドレスとして持つユーザーを作成することができる`, () => {
+        pipe(
+          user,
+          mustSuccess((created: User) =>
+            expect(created).toMatchObject({
+              name: 'user01',
+              email: newEmail,
+            }),
+          ),
+        );
+      });
+    } else {
+      it(`${newEmail}をメールアドレスとして持つユーザーを作成することはできない`, () => {
         pipe(user, mustFail());
       });
     }
@@ -75,28 +109,35 @@ describe('ユーザー作成', () => {
 
 describe('ユーザー名変更', () => {
   [
-    { userName: 'aaaa', success: false }, // length=4
-    { userName: 'aaaaa', success: true }, // length=5
-    { userName: 'aaaaaaaaaaaaaaaaaaaa', success: true }, // length=20
-    { userName: 'aaaaaaaaaaaaaaaaaaaaa', success: false }, // length=21
-  ].forEach(({ userName, success }) => {
+    { newName: 'aaaa', success: false }, // length=4
+    { newName: 'aaaaa', success: true }, // length=5
+    { newName: 'aaaaaaaaaaaaaaaaaaaa', success: true }, // length=20
+    { newName: 'aaaaaaaaaaaaaaaaaaaaa', success: false }, // length=21
+  ].forEach(({ newName, success }) => {
     const user = pipe(
       createUser({
         name: 'user01',
+        email: 'valid@example.com',
       }),
       mustSuccess(),
     );
-    const result = pipe(user, changeUserName(userName));
+    const result = pipe(user, changeUserName(newName));
 
     if (success) {
-      it(`ユーザー名の長さが${userName.length}のユーザーを作成することができる`, () => {
+      it(`ユーザー名の長さが${newName.length}のユーザーを作成することができる`, () => {
         pipe(
           result,
-          mustSuccess((user: User) => expect(user.name).toEqual(userName)),
+          mustSuccess((updated: User) =>
+            expect(updated).toMatchObject({
+              id: user.id,
+              name: newName,
+              email: 'valid@example.com',
+            }),
+          ),
         );
       });
     } else {
-      it(`ユーザー名の長さが${userName.length}のユーザーを作成することはできない`, () => {
+      it(`ユーザー名の長さが${newName.length}のユーザーを作成することはできない`, () => {
         pipe(result, mustFail());
       });
     }
