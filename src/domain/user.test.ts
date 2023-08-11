@@ -1,4 +1,10 @@
-import { UserId, type User, createUser, changeUserName } from './user';
+import {
+  UserId,
+  type User,
+  createUser,
+  changeUserName,
+  changeUserEmail,
+} from './user';
 import { match } from 'fp-ts/lib/Either';
 import { pipe } from 'fp-ts/lib/function';
 
@@ -138,6 +144,40 @@ describe('ユーザー名変更', () => {
       });
     } else {
       it(`ユーザー名の長さが${newName.length}のユーザーを作成することはできない`, () => {
+        pipe(result, mustFail());
+      });
+    }
+  });
+});
+
+describe('メールアドレス変更', () => {
+  [
+    { newEmail: 'valid@example.com', success: true },
+    { newEmail: 'invalid_at_example.com', success: false },
+  ].forEach(({ newEmail, success }) => {
+    const user = pipe(
+      createUser({
+        name: 'user01',
+        email: 'valid@example.com',
+      }),
+      mustSuccess(),
+    );
+    const result = pipe(user, changeUserEmail(newEmail));
+
+    if (success) {
+      it(`"${newEmail}"をメールアドレスとして持つユーザーを作成することができる`, () => {
+        pipe(
+          result,
+          mustSuccess((created: User) =>
+            expect(created).toMatchObject({
+              name: 'user01',
+              email: newEmail,
+            }),
+          ),
+        );
+      });
+    } else {
+      it(`${newEmail}をメールアドレスとして持つユーザーを作成することはできない`, () => {
         pipe(result, mustFail());
       });
     }

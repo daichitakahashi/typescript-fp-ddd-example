@@ -69,4 +69,17 @@ const changeUserName =
   (user: User): Either<Error, User> =>
     pipe(user, validatePartial(UserSchema, 'name', name));
 
-export { UserId, UserProps, User, createUser, reconstructUser, changeUserName };
+const changeUserEmail =
+  (email: string) =>
+  (user: User): Either<Error, User> =>
+    pipe(user, validatePartial(UserSchema, 'email', email));
+
+export {
+  UserId,
+  UserProps,
+  User,
+  createUser,
+  reconstructUser,
+  changeUserName,
+  changeUserEmail,
+};
