@@ -64,15 +64,13 @@ const createUser = (params: {
     ...params,
   });
 
-const changeUserName =
-  (name: string) =>
-  (user: User): Either<Error, User> =>
-    pipe(user, validatePartial(UserSchema, 'name', name));
+type UpdateUserFunction = (user: User) => Either<Error, User>;
 
-const changeUserEmail =
-  (email: string) =>
-  (user: User): Either<Error, User> =>
-    pipe(user, validatePartial(UserSchema, 'email', email));
+const changeUserName = (name: string): UpdateUserFunction =>
+  validatePartial(UserSchema, 'name', name);
+
+const changeUserEmail = (email: string): UpdateUserFunction =>
+  validatePartial(UserSchema, 'email', email);
 
 export {
   UserId,
