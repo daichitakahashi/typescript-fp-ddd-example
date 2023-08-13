@@ -10,7 +10,7 @@ import {
   email,
   partial,
 } from 'valibot';
-import { createEntity, validate, validatePartial } from './base';
+import { conditional, createEntity, validate, validatePartial } from './base';
 
 const sym = Symbol('user');
 
@@ -64,13 +64,17 @@ const createUser = (params: {
     ...params,
   });
 
-type UpdateUserFunction = (user: User) => Either<Error, User>;
+const changeUserName = (name: string) =>
+  conditional<Error, User>(
+    (user: User) => user.name !== name,
+    validatePartial(UserSchema, 'name', name),
+  );
 
-const changeUserName = (name: string): UpdateUserFunction =>
-  validatePartial(UserSchema, 'name', name);
-
-const changeUserEmail = (email: string): UpdateUserFunction =>
-  validatePartial(UserSchema, 'email', email);
+const changeUserEmail = (email: string) =>
+  conditional<Error, User>(
+    (user: User) => user.email !== email,
+    validatePartial(UserSchema, 'email', email),
+  );
 
 export {
   UserId,

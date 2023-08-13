@@ -38,4 +38,9 @@ const validatePartial =
       })),
     );
 
-export { createEntity, validate, validatePartial };
+const conditional =
+  <E, A>(cond: (a: A) => boolean, ifTrue: (a: A) => Either<E, A>) =>
+  (a: A): Either<E, A> =>
+    cond(a) ? ifTrue(a) : right<E, A>(a);
+
+export { createEntity, validate, validatePartial, conditional };
