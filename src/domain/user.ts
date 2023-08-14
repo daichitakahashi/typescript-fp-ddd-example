@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
-import { Either, map } from 'fp-ts/Either';
-import { pipe } from 'fp-ts/lib/function';
+import * as E from 'fp-ts/Either';
+import * as f from 'fp-ts/function';
 import {
   object,
   string,
@@ -21,11 +21,11 @@ export class UserId {
   static generate(): UserId {
     return new UserId(randomUUID());
   }
-  static from(uuid: string): Either<Error, UserId> {
-    return pipe(
+  static from(uuid: string): E.Either<Error, UserId> {
+    return f.pipe(
       uuid,
       validate(UserIdSchema),
-      map((validated) => new UserId(validated)),
+      E.map((validated) => new UserId(validated)),
     );
   }
 }
@@ -43,11 +43,11 @@ const UserSchema = partial(
     email: string([email()]),
   }),
 );
-export const reconstructUser = (props: UserProps): Either<Error, User> =>
-  pipe(
+export const reconstructUser = (props: UserProps): E.Either<Error, User> =>
+  f.pipe(
     props,
     validate(UserSchema),
-    map((validated) =>
+    E.map((validated) =>
       createEntity<UserProps>(sym, {
         ...props,
         ...validated,
@@ -58,7 +58,7 @@ export const reconstructUser = (props: UserProps): Either<Error, User> =>
 export const createUser = (params: {
   name: string;
   email: string;
-}): Either<Error, User> =>
+}): E.Either<Error, User> =>
   reconstructUser({
     id: UserId.generate(),
     ...params,

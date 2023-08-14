@@ -5,11 +5,11 @@ import {
   changeUserName,
   changeUserEmail,
 } from './user';
-import { match } from 'fp-ts/lib/Either';
-import { pipe } from 'fp-ts/lib/function';
+import * as E from 'fp-ts/Either';
+import * as f from 'fp-ts/function';
 
 const mustFail = <Right>() =>
-  match<Error, Right, Error>(
+  E.match<Error, Right, Error>(
     (e) => e,
     (a): Error => {
       throw new Error(`unexpected success: ${a}`);
@@ -17,7 +17,7 @@ const mustFail = <Right>() =>
   );
 
 const mustSuccess = <Right>(onRight?: (a: Right) => void) =>
-  match<Error, Right, Right>(
+  E.match<Error, Right, Right>(
     (e) => {
       throw new Error(`unexpected error: ${e}`);
     },
@@ -31,20 +31,20 @@ describe('ユーザーID', () => {
   it('作成したユーザーIDが意図した値を持つ', () => {
     const uuid = '2c7978c0-358c-4ab1-9916-b4adccc394b9';
 
-    pipe(
+    f.pipe(
       UserId.from(uuid),
       mustSuccess((id: UserId) => expect(id.value).toEqual(uuid)),
     );
   });
 
   it('UUIDとして不正な文字列からユーザーIDを作成することはできない', () => {
-    pipe(UserId.from('a-a-a-a-a'), mustFail());
+    f.pipe(UserId.from('a-a-a-a-a'), mustFail());
   });
 });
 
 describe('ユーザー作成', () => {
   it('作成したユーザーが意図した値を持つ', () => {
-    pipe(
+    f.pipe(
       createUser({
         name: 'user01',
         email: 'valid@example.com',
@@ -68,7 +68,7 @@ describe('ユーザー作成', () => {
     });
     if (success) {
       it(`ユーザー名の長さが${newName.length}のユーザーを作成することができる`, () => {
-        pipe(
+        f.pipe(
           user,
           mustSuccess((created: User) =>
             expect(created).toMatchObject({
@@ -80,7 +80,7 @@ describe('ユーザー作成', () => {
       });
     } else {
       it(`ユーザー名の長さが${newName.length}のユーザーを作成することはできない`, () => {
-        pipe(user, mustFail());
+        f.pipe(user, mustFail());
       });
     }
   });
@@ -95,7 +95,7 @@ describe('ユーザー作成', () => {
     });
     if (success) {
       it(`"${newEmail}"をメールアドレスとして持つユーザーを作成することができる`, () => {
-        pipe(
+        f.pipe(
           user,
           mustSuccess((created: User) =>
             expect(created).toMatchObject({
@@ -107,7 +107,7 @@ describe('ユーザー作成', () => {
       });
     } else {
       it(`${newEmail}をメールアドレスとして持つユーザーを作成することはできない`, () => {
-        pipe(user, mustFail());
+        f.pipe(user, mustFail());
       });
     }
   });
@@ -120,18 +120,18 @@ describe('ユーザー名変更', () => {
     { newName: 'aaaaaaaaaaaaaaaaaaaa', success: true }, // length=20
     { newName: 'aaaaaaaaaaaaaaaaaaaaa', success: false }, // length=21
   ].forEach(({ newName, success }) => {
-    const user = pipe(
+    const user = f.pipe(
       createUser({
         name: 'user01',
         email: 'valid@example.com',
       }),
       mustSuccess(),
     );
-    const result = pipe(user, changeUserName(newName));
+    const result = f.pipe(user, changeUserName(newName));
 
     if (success) {
       it(`ユーザー名の長さが${newName.length}のユーザーを作成することができる`, () => {
-        pipe(
+        f.pipe(
           result,
           mustSuccess((updated: User) =>
             expect(updated).toMatchObject({
@@ -144,7 +144,7 @@ describe('ユーザー名変更', () => {
       });
     } else {
       it(`ユーザー名の長さが${newName.length}のユーザーを作成することはできない`, () => {
-        pipe(result, mustFail());
+        f.pipe(result, mustFail());
       });
     }
   });
@@ -155,18 +155,18 @@ describe('メールアドレス変更', () => {
     { newEmail: 'valid@example.com', success: true },
     { newEmail: 'invalid_at_example.com', success: false },
   ].forEach(({ newEmail, success }) => {
-    const user = pipe(
+    const user = f.pipe(
       createUser({
         name: 'user01',
         email: 'valid@example.com',
       }),
       mustSuccess(),
     );
-    const result = pipe(user, changeUserEmail(newEmail));
+    const result = f.pipe(user, changeUserEmail(newEmail));
 
     if (success) {
       it(`"${newEmail}"をメールアドレスとして持つユーザーを作成することができる`, () => {
-        pipe(
+        f.pipe(
           result,
           mustSuccess((created: User) =>
             expect(created).toMatchObject({
@@ -178,7 +178,7 @@ describe('メールアドレス変更', () => {
       });
     } else {
       it(`${newEmail}をメールアドレスとして持つユーザーを作成することはできない`, () => {
-        pipe(result, mustFail());
+        f.pipe(result, mustFail());
       });
     }
   });

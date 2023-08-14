@@ -1,5 +1,5 @@
-import { left, right, map, type Either } from 'fp-ts/Either';
-import { pipe } from 'fp-ts/lib/function';
+import * as E from 'fp-ts/Either';
+import * as f from 'fp-ts/function';
 import { parse, type BaseSchema, type Output } from 'valibot';
 
 export const createEntity = <Props>(sym: symbol, props: Props) => ({
@@ -9,11 +9,11 @@ export const createEntity = <Props>(sym: symbol, props: Props) => ({
 
 export const validate =
   <Schema extends BaseSchema<any, any>>(schema: Schema) =>
-  (input: Output<Schema>): Either<Error, Output<Schema>> => {
+  (input: Output<Schema>): E.Either<Error, Output<Schema>> => {
     try {
-      return right(parse(schema, input));
+      return E.right(parse(schema, input));
     } catch (err: any) {
-      return left(err as Error);
+      return E.left(err as Error);
     }
   };
 
@@ -29,16 +29,16 @@ export const validatePartial =
     value: Value,
   ) =>
   (target: Props) =>
-    pipe(
+    f.pipe(
       { [key]: value },
       validate(schema),
-      map((validated) => ({
+      E.map((validated) => ({
         ...target,
         [key]: validated[key as keyof Output<typeof schema>],
       })),
     );
 
 export const conditional =
-  <E, A>(cond: (a: A) => boolean, ifTrue: (a: A) => Either<E, A>) =>
-  (a: A): Either<E, A> =>
-    cond(a) ? ifTrue(a) : right<E, A>(a);
+  <E, A>(cond: (a: A) => boolean, ifTrue: (a: A) => E.Either<E, A>) =>
+  (a: A): E.Either<E, A> =>
+    cond(a) ? ifTrue(a) : E.right<E, A>(a);
