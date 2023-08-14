@@ -15,7 +15,7 @@ import { conditional, createEntity, validate, validatePartial } from './base';
 const sym = Symbol('user');
 
 const UserIdSchema = string([uuid()]);
-class UserId {
+export class UserId {
   private [sym] = true;
   private constructor(readonly value: string) {}
   static generate(): UserId {
@@ -30,12 +30,12 @@ class UserId {
   }
 }
 
-interface UserProps {
+export interface UserProps {
   id: UserId;
   name: string;
   email: string;
 }
-type User = ReturnType<typeof createEntity<UserProps>>;
+export type User = ReturnType<typeof createEntity<UserProps>>;
 
 const UserSchema = partial(
   object({
@@ -43,7 +43,7 @@ const UserSchema = partial(
     email: string([email()]),
   }),
 );
-const reconstructUser = (props: UserProps): Either<Error, User> =>
+export const reconstructUser = (props: UserProps): Either<Error, User> =>
   pipe(
     props,
     validate(UserSchema),
@@ -55,7 +55,7 @@ const reconstructUser = (props: UserProps): Either<Error, User> =>
     ),
   );
 
-const createUser = (params: {
+export const createUser = (params: {
   name: string;
   email: string;
 }): Either<Error, User> =>
@@ -64,24 +64,14 @@ const createUser = (params: {
     ...params,
   });
 
-const changeUserName = (name: string) =>
+export const changeUserName = (name: string) =>
   conditional<Error, User>(
     (user: User) => user.name !== name,
     validatePartial(UserSchema, 'name', name),
   );
 
-const changeUserEmail = (email: string) =>
+export const changeUserEmail = (email: string) =>
   conditional<Error, User>(
     (user: User) => user.email !== email,
     validatePartial(UserSchema, 'email', email),
   );
-
-export {
-  UserId,
-  UserProps,
-  User,
-  createUser,
-  reconstructUser,
-  changeUserName,
-  changeUserEmail,
-};

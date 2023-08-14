@@ -2,12 +2,12 @@ import { left, right, map, type Either } from 'fp-ts/Either';
 import { pipe } from 'fp-ts/lib/function';
 import { parse, type BaseSchema, type Output } from 'valibot';
 
-const createEntity = <Props>(sym: symbol, props: Props) => ({
+export const createEntity = <Props>(sym: symbol, props: Props) => ({
   [sym]: true,
   ...props,
 });
 
-const validate =
+export const validate =
   <Schema extends BaseSchema<any, any>>(schema: Schema) =>
   (input: Output<Schema>): Either<Error, Output<Schema>> => {
     try {
@@ -17,7 +17,7 @@ const validate =
     }
   };
 
-const validatePartial =
+export const validatePartial =
   <
     Schema extends BaseSchema<any, any>,
     Props,
@@ -38,9 +38,7 @@ const validatePartial =
       })),
     );
 
-const conditional =
+export const conditional =
   <E, A>(cond: (a: A) => boolean, ifTrue: (a: A) => Either<E, A>) =>
   (a: A): Either<E, A> =>
     cond(a) ? ifTrue(a) : right<E, A>(a);
-
-export { createEntity, validate, validatePartial, conditional };
