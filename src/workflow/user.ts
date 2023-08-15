@@ -1,10 +1,10 @@
 import * as f from 'fp-ts/function';
-import * as E from 'fp-ts/Either';
+import * as IE from 'fp-ts/IOEither';
 import { User, changeUserName, changeUserEmail, UserId } from '../domain/user';
 
-export type GetUser = (id: UserId) => E.Either<Error, User>;
+export type GetUser = (id: UserId) => IE.IOEither<Error, User>;
 
-export type SaveUser = (user: User) => E.Either<Error, User>;
+export type SaveUser = (user: User) => IE.IOEither<Error, User>;
 
 export const updateUserProfile =
   (getUser: GetUser) =>
@@ -12,9 +12,9 @@ export const updateUserProfile =
   (update: { name: string; email: string }) =>
     f.flow(
       getUser,
-      E.flatMap(changeUserName(update.name)),
-      E.flatMap(changeUserEmail(update.email)),
-      E.flatMap(saveUser),
+      IE.flatMapEither(changeUserName(update.name)),
+      IE.flatMapEither(changeUserEmail(update.email)),
+      IE.flatMap(saveUser),
     );
 
 const exampleCall = f.pipe(
