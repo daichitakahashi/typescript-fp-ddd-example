@@ -62,8 +62,8 @@ export const reconstructUser = (
   props: UserProps,
 ): E.Either<InvalidUserName | InvalidUserEmail, User> =>
   f.pipe(
-    props,
-    validateUserName,
+    E.right(props),
+    E.flatMap(validateUserName),
     E.flatMap(validateUserEmail),
     E.map((validated) =>
       createEntity<UserProps>(sym, {
