@@ -9,9 +9,16 @@ import {
 } from './user';
 import { ErrorSet } from '../error';
 
-const mustFail = <Right>() =>
+const mustFail = <Right>(expectedErrorType: string) =>
   E.match<ErrorSet, Right, ErrorSet>(
-    (e) => e,
+    (e) => {
+      if (e.type !== expectedErrorType) {
+        throw new Error(
+          `unexpected error type: expected=${expectedErrorType}, actual=${e.type}`,
+        );
+      }
+      return e;
+    },
     (a): ErrorSet => {
       throw new Error(`unexpected success: ${a}`);
     },
@@ -39,7 +46,7 @@ describe('ユーザーID', () => {
   });
 
   it('UUIDとして不正な文字列からユーザーIDを作成することはできない', () => {
-    f.pipe(UserId.from('a-a-a-a-a'), mustFail());
+    f.pipe(UserId.from('a-a-a-a-a'), mustFail('InvalidUserId'));
   });
 });
 
@@ -81,7 +88,7 @@ describe('ユーザー作成', () => {
       });
     } else {
       it(`ユーザー名の長さが${newName.length}のユーザーを作成することはできない`, () => {
-        f.pipe(user, mustFail());
+        f.pipe(user, mustFail('InvalidUserName'));
       });
     }
   });
@@ -108,7 +115,7 @@ describe('ユーザー作成', () => {
       });
     } else {
       it(`"${newEmail}"をメールアドレスとして持つユーザーを作成することはできない`, () => {
-        f.pipe(user, mustFail());
+        f.pipe(user, mustFail('InvalidUserEmail'));
       });
     }
   });
@@ -145,7 +152,7 @@ describe('ユーザー名変更', () => {
       });
     } else {
       it(`ユーザー名の長さが${newName.length}のユーザーを作成することはできない`, () => {
-        f.pipe(result, mustFail());
+        f.pipe(result, mustFail('InvalidUserName'));
       });
     }
   });
@@ -179,7 +186,7 @@ describe('メールアドレス変更', () => {
       });
     } else {
       it(`"${newEmail}"をメールアドレスとして持つユーザーを作成することはできない`, () => {
-        f.pipe(result, mustFail());
+        f.pipe(result, mustFail('InvalidUserEmail'));
       });
     }
   });
