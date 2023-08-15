@@ -1,10 +1,17 @@
 import * as f from 'fp-ts/function';
-import * as IE from 'fp-ts/IOEither';
+import * as IOE from 'fp-ts/IOEither';
 import { User, changeUserName, changeUserEmail, UserId } from '../domain/user';
+import { ErrorType } from '../error';
 
-export type GetUser = (id: UserId) => IE.IOEither<Error, User>;
+export type IOError = ErrorType<'IOError', { error: Error }>;
 
-export type SaveUser = (user: User) => IE.IOEither<Error, User>;
+export type UserNotFound = ErrorType<'UserNotFound'>;
+
+export type GetUser = (
+  id: UserId,
+) => IOE.IOEither<IOError | UserNotFound, User>;
+
+export type SaveUser = (user: User) => IOE.IOEither<IOError, User>;
 
 export const updateUserProfile =
   (getUser: GetUser) =>
@@ -12,9 +19,9 @@ export const updateUserProfile =
   (update: { name: string; email: string }) =>
     f.flow(
       getUser,
-      IE.flatMapEither(changeUserName(update.name)),
-      IE.flatMapEither(changeUserEmail(update.email)),
-      IE.flatMap(saveUser),
+      IOE.flatMapEither(changeUserName(update.name)),
+      IOE.flatMapEither(changeUserEmail(update.email)),
+      IOE.flatMap(saveUser),
     );
 
 const exampleCall = f.pipe(
@@ -25,4 +32,22 @@ const exampleCall = f.pipe(
 const exampleResult = f.pipe(
   null as unknown as UserId,
   exampleCall({ name: '', email: '' }),
+);
+
+f.pipe(
+  exampleResult,
+  IOE.mapError((e) => {
+    switch (e.type) {
+      case 'IOError':
+        break;
+      case 'UserNotFound':
+        break;
+      case 'InvalidUserName':
+        break;
+      case 'InvalidUserEmail':
+        break;
+      default:
+        const _: never = e;
+    }
+  }),
 );

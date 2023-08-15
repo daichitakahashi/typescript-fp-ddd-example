@@ -1,3 +1,5 @@
+import * as E from 'fp-ts/Either';
+import * as f from 'fp-ts/function';
 import {
   UserId,
   type User,
@@ -5,19 +7,18 @@ import {
   changeUserName,
   changeUserEmail,
 } from './user';
-import * as E from 'fp-ts/Either';
-import * as f from 'fp-ts/function';
+import { ErrorSet } from '../error';
 
 const mustFail = <Right>() =>
-  E.match<Error, Right, Error>(
+  E.match<ErrorSet, Right, ErrorSet>(
     (e) => e,
-    (a): Error => {
+    (a): ErrorSet => {
       throw new Error(`unexpected success: ${a}`);
     },
   );
 
 const mustSuccess = <Right>(onRight?: (a: Right) => void) =>
-  E.match<Error, Right, Right>(
+  E.match<ErrorSet, Right, Right>(
     (e) => {
       throw new Error(`unexpected error: ${e}`);
     },
@@ -106,7 +107,7 @@ describe('ユーザー作成', () => {
         );
       });
     } else {
-      it(`${newEmail}をメールアドレスとして持つユーザーを作成することはできない`, () => {
+      it(`"${newEmail}"をメールアドレスとして持つユーザーを作成することはできない`, () => {
         f.pipe(user, mustFail());
       });
     }
@@ -177,7 +178,7 @@ describe('メールアドレス変更', () => {
         );
       });
     } else {
-      it(`${newEmail}をメールアドレスとして持つユーザーを作成することはできない`, () => {
+      it(`"${newEmail}"をメールアドレスとして持つユーザーを作成することはできない`, () => {
         f.pipe(result, mustFail());
       });
     }
