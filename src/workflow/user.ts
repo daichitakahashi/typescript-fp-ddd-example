@@ -23,31 +23,3 @@ export const updateUserProfile =
       IOE.flatMapEither(changeUserEmail(update.email)),
       IOE.flatMap(saveUser),
     );
-
-const exampleCall = f.pipe(
-  updateUserProfile,
-  f.apply(null as unknown as GetUser),
-  f.apply(null as unknown as SaveUser),
-);
-const exampleResult = f.pipe(
-  null as unknown as UserId,
-  exampleCall({ name: '', email: '' }),
-);
-
-f.pipe(
-  exampleResult,
-  IOE.mapError((e) => {
-    switch (e.type) {
-      case 'IOError':
-        break;
-      case 'UserNotFound':
-        break;
-      case 'InvalidUserName':
-        break;
-      case 'InvalidUserEmail':
-        break;
-      default:
-        const _: never = e;
-    }
-  }),
-);
