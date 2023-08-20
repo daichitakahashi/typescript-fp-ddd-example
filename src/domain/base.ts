@@ -1,4 +1,6 @@
-export const createEntity = <Props>(sym: symbol, props: Props) => ({
-  [sym]: true,
-  ...props,
-});
+export abstract class Exclusive {
+  private internal: undefined;
+  constructor() {}
+}
+
+export type Props<E extends Exclusive> = Omit<E, 'internal'>;
