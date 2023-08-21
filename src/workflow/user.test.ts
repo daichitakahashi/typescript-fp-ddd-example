@@ -7,6 +7,7 @@ import {
   reconstructUser,
   validateUserId,
 } from '../domain/user';
+import { deepStrictEqual } from '../utils/testing';
 
 describe('createUser', () => {
   it('ユーザーを作成することができる', () => {
@@ -96,6 +97,3 @@ describe('updateUserProfile', () => {
     );
   });
 });
-
-const deepStrictEqual = <A>(actual: A, expected: A) =>
-  expect(actual).toStrictEqual(expected);

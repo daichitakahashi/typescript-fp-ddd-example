@@ -6,7 +6,7 @@ import { type ErrorType } from '../error';
 
 export type UserId = string & { readonly __brand: unique symbol };
 
-type InvalidUserId = ErrorType<'InvalidUserId'>;
+export type InvalidUserId = ErrorType<'InvalidUserId'>;
 export const validateUserId = f.flow(
   E.fromPredicate(
     (input: string) =>
