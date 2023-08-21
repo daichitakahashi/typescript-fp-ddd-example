@@ -8,6 +8,21 @@ import {
   reconstructUser,
 } from '../domain/user';
 
+describe('createUser', () => {
+  it('ユーザーを作成することができる', () => {
+    deepStrictEqual(
+      _.createUser({ name: 'user01', email: 'user01@example.com' }),
+      E.right([
+        {
+          eventName: 'UserCreated',
+          name: 'user01',
+          email: 'user01@example.com',
+        } satisfies _.UserCreated,
+      ]),
+    );
+  });
+});
+
 describe('updateUserProfile', () => {
   it('プロフィールを変更することができる', () => {
     deepStrictEqual(
