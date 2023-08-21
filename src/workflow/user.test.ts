@@ -4,27 +4,24 @@ import * as _ from './user';
 import { UserId, User, reconstructUser } from '../domain/user';
 
 describe('updateUserProfile', () => {
+  const getUser = (id: UserId) =>
+    f.pipe(
+      IOE.fromEither(
+        reconstructUser({
+          id,
+          name: 'user01',
+          email: 'user01@example.com',
+        }),
+      ),
+      IOE.mapError((e): _.UserNotFound => {
+        throw new Error(`unreachable code: ${e}`);
+      }),
+    );
+
   it('プロフィールを変更することができる', () => {
     const updateUserProfile = f.pipe(
       _.updateUserProfile,
-      f.apply(
-        // apply GetUser
-        (id: UserId): IOE.IOEither<_.UserNotFound, User> =>
-          f.pipe(
-            IOE.fromEither(
-              // get "user01"
-              reconstructUser({
-                id,
-                name: 'user01',
-                email: 'user01@example.com',
-              }),
-            ),
-            IOE.mapError((e): _.UserNotFound => {
-              throw new Error(`unreachable code: ${e}`);
-            }),
-          ),
-      ),
-      // apply SaveUser
+      f.apply(getUser),
       f.apply((user: User) => IOE.right(user)),
     );
 
@@ -48,6 +45,52 @@ describe('updateUserProfile', () => {
           }),
         ),
       )(),
+    );
+  });
+
+  it('不正なユーザー名を使ってプロフィールを変更することはできない', () => {
+    const updateUserProfile = f.pipe(
+      _.updateUserProfile,
+      f.apply(getUser),
+      f.apply(() => {
+        throw new Error('unreachable!');
+      }),
+    );
+
+    deepStrictEqual(
+      f.pipe(
+        IOE.fromEither(UserId.from('eb98e96c-f3e0-4416-a358-5b0825506d83')),
+        IOE.flatMap(
+          updateUserProfile({
+            name: 'aaa', // too short
+            email: 'newUser01@example.com',
+          }),
+        ),
+      )(),
+      IOE.left({ type: 'InvalidUserName' } as const)(),
+    );
+  });
+
+  it('不正なメールアドレスを使ってプロフィールを変更することはできない', () => {
+    const updateUserProfile = f.pipe(
+      _.updateUserProfile,
+      f.apply(getUser),
+      f.apply(() => {
+        throw new Error('unreachable!');
+      }),
+    );
+
+    deepStrictEqual(
+      f.pipe(
+        IOE.fromEither(UserId.from('eb98e96c-f3e0-4416-a358-5b0825506d83')),
+        IOE.flatMap(
+          updateUserProfile({
+            name: 'newUser01',
+            email: 'newUser01_at_example.com',
+          }),
+        ),
+      )(),
+      IOE.left({ type: 'InvalidUserEmail' } as const)(),
     );
   });
 });
