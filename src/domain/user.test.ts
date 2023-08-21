@@ -1,11 +1,12 @@
 import * as E from 'fp-ts/Either';
 import * as f from 'fp-ts/function';
 import {
-  UserId,
+  type UserId,
   type User,
   createUser,
   changeUserName,
   changeUserEmail,
+  validateUserId,
 } from './user';
 import { ErrorSet } from '../error';
 
@@ -37,16 +38,16 @@ const mustSuccess = <Right>(onRight?: (a: Right) => void) =>
 
 describe('ユーザーID', () => {
   it('作成したユーザーIDが意図した値を持つ', () => {
-    const uuid = '2c7978c0-358c-4ab1-9916-b4adccc394b9';
-
     f.pipe(
-      UserId.from(uuid),
-      mustSuccess((id: UserId) => expect(id.value).toEqual(uuid)),
+      validateUserId('2c7978c0-358c-4ab1-9916-b4adccc394b9'),
+      mustSuccess((id: UserId) =>
+        expect(id).toEqual('2c7978c0-358c-4ab1-9916-b4adccc394b9'),
+      ),
     );
   });
 
   it('UUIDとして不正な文字列からユーザーIDを作成することはできない', () => {
-    f.pipe(UserId.from('a-a-a-a-a'), mustFail('InvalidUserId'));
+    f.pipe(validateUserId('a-a-a-a-a'), mustFail('InvalidUserId'));
   });
 });
 

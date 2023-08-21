@@ -4,32 +4,23 @@ import * as f from 'fp-ts/function';
 import { Exclusive, reconstructFunc, type Props } from './base';
 import { type ErrorType } from '../error';
 
+export type UserId = string & { readonly __brand: unique symbol };
+
 type InvalidUserId = ErrorType<'InvalidUserId'>;
-const validateUserId = E.fromPredicate(
-  (input: string) =>
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-      input,
-    ),
-  (): InvalidUserId => ({
-    type: 'InvalidUserId',
-  }),
+export const validateUserId = f.flow(
+  E.fromPredicate(
+    (input: string) =>
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        input,
+      ),
+    (): InvalidUserId => ({
+      type: 'InvalidUserId',
+    }),
+  ),
+  E.map((validated: string) => validated as UserId),
 );
 
-export class UserId extends Exclusive {
-  private constructor(readonly value: string) {
-    super();
-  }
-  static generate(): UserId {
-    return new UserId(randomUUID());
-  }
-  static from(uuid: string): E.Either<InvalidUserId, UserId> {
-    return f.pipe(
-      uuid,
-      validateUserId,
-      E.map((validated) => new UserId(validated)),
-    );
-  }
-}
+const generateUserId = () => randomUUID() as UserId;
 
 export class User extends Exclusive {
   readonly id: UserId;
@@ -75,7 +66,7 @@ export const reconstructUser = (props: UserProps) =>
 
 export const createUser = (params: { name: string; email: string }) =>
   reconstructUser({
-    id: UserId.generate(),
+    id: generateUserId(),
     ...params,
   });
 

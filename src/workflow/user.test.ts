@@ -4,8 +4,8 @@ import * as _ from './user';
 import {
   InvalidUserEmail,
   InvalidUserName,
-  UserId,
   reconstructUser,
+  validateUserId,
 } from '../domain/user';
 
 describe('createUser', () => {
@@ -27,7 +27,7 @@ describe('updateUserProfile', () => {
   it('プロフィールを変更することができる', () => {
     deepStrictEqual(
       f.pipe(
-        UserId.from('eb98e96c-f3e0-4416-a358-5b0825506d83'),
+        validateUserId('eb98e96c-f3e0-4416-a358-5b0825506d83'),
         E.flatMap((userId) =>
           reconstructUser({
             id: userId,
@@ -55,7 +55,7 @@ describe('updateUserProfile', () => {
   it('不正なユーザー名を使ってプロフィールを変更することはできない', () => {
     deepStrictEqual(
       f.pipe(
-        UserId.from('eb98e96c-f3e0-4416-a358-5b0825506d83'),
+        validateUserId('eb98e96c-f3e0-4416-a358-5b0825506d83'),
         E.flatMap((userId) =>
           reconstructUser({
             id: userId,
@@ -77,7 +77,7 @@ describe('updateUserProfile', () => {
   it('不正なメールアドレスを使ってプロフィールを変更することはできない', () => {
     deepStrictEqual(
       f.pipe(
-        UserId.from('eb98e96c-f3e0-4416-a358-5b0825506d83'),
+        validateUserId('eb98e96c-f3e0-4416-a358-5b0825506d83'),
         E.flatMap((userId) =>
           reconstructUser({
             id: userId,
