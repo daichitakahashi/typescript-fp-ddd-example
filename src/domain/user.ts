@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import * as E from 'fp-ts/Either';
 import * as f from 'fp-ts/function';
-import { Exclusive, type Props } from './base';
+import { Exclusive, reconstructFunc, type Props } from './base';
 import { type ErrorType } from '../error';
 
 type InvalidUserId = ErrorType<'InvalidUserId'>;
@@ -35,7 +35,7 @@ export class User extends Exclusive {
   readonly id: UserId;
   readonly name: string;
   readonly email: string;
-  protected constructor(props: UserProps) {
+  private constructor(props: UserProps) {
     super();
     this.id = props.id;
     this.name = props.name;
@@ -45,16 +45,7 @@ export class User extends Exclusive {
 
 export type UserProps = Props<User>;
 
-class UserFactory extends User {
-  constructor(props: UserProps) {
-    super(props);
-  }
-  static reconstructUnsafely(props: UserProps): User {
-    const u = new UserFactory(props);
-    Object.setPrototypeOf(u, User.prototype);
-    return u;
-  }
-}
+const reconstructUserUnsafely = reconstructFunc<User, typeof User>(User);
 
 export type InvalidUserName = ErrorType<'InvalidUserName'>;
 const validateUserName = E.fromPredicate(
@@ -77,7 +68,7 @@ const validateUserEmail = E.fromPredicate(
 
 export const reconstructUser = (props: UserProps) =>
   f.pipe(
-    E.right(UserFactory.reconstructUnsafely(props)),
+    E.right(reconstructUserUnsafely(props)),
     E.flatMap(validateUserName),
     E.flatMap(validateUserEmail),
   );
@@ -89,10 +80,7 @@ export const createUser = (params: { name: string; email: string }) =>
   });
 
 export const changeUserName = (name: string) => (user: User) =>
-  f.pipe(UserFactory.reconstructUnsafely({ ...user, name }), validateUserName);
+  f.pipe(reconstructUserUnsafely({ ...user, name }), validateUserName);
 
 export const changeUserEmail = (email: string) => (user: User) =>
-  f.pipe(
-    UserFactory.reconstructUnsafely({ ...user, email }),
-    validateUserEmail,
-  );
+  f.pipe(reconstructUserUnsafely({ ...user, email }), validateUserEmail);
