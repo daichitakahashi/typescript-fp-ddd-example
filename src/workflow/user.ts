@@ -1,22 +1,6 @@
 import * as f from 'fp-ts/function';
 import * as E from 'fp-ts/Either';
-import * as IOE from 'fp-ts/IOEither';
-import {
-  User,
-  createUser,
-  changeUserName,
-  changeUserEmail,
-  UserId,
-} from '../domain/user';
-import { ErrorType } from '../error';
-
-export type IOError = ErrorType<'IOError', { error: Error }>;
-export type UserNotFound = ErrorType<'UserNotFound'>;
-
-export type GetUser = (
-  id: UserId,
-) => IOE.IOEither<IOError | UserNotFound, User>;
-export type SaveUser = (events: UserEvent[]) => IOE.IOEither<IOError, void>;
+import * as _ from '../domain/user';
 
 export type UserCreated = Readonly<{
   eventName: 'UserCreated';
@@ -30,34 +14,26 @@ export type UserProfileUpdated = Readonly<{
 }>;
 export type UserEvent = UserCreated | UserProfileUpdated;
 
-export const createUserWorkflow = (saveUser: SaveUser) =>
+export const createUser = f.flow(
+  _.createUser,
+  E.map((user) => [
+    {
+      eventName: 'UserCreated',
+      name: user.name,
+      email: user.email,
+    } satisfies UserCreated,
+  ]),
+);
+
+export const updateUserProfile = (update: { name: string; email: string }) =>
   f.flow(
-    createUser,
+    _.changeUserName(update.name),
+    E.flatMap(_.changeUserEmail(update.email)),
     E.map((user) => [
       {
-        eventName: 'UserCreated',
+        eventName: 'UserProfileUpdated',
         name: user.name,
         email: user.email,
-      } satisfies UserCreated,
+      } satisfies UserProfileUpdated,
     ]),
-    IOE.fromEither,
-    IOE.flatMap(saveUser),
   );
-
-export const updateUserProfileWorkflow =
-  (getUser: GetUser) =>
-  (saveUser: SaveUser) =>
-  (update: { name: string; email: string }) =>
-    f.flow(
-      getUser,
-      IOE.flatMapEither(changeUserName(update.name)),
-      IOE.flatMapEither(changeUserEmail(update.email)),
-      IOE.map((user) => [
-        {
-          eventName: 'UserProfileUpdated',
-          name: user.name,
-          email: user.email,
-        } satisfies UserProfileUpdated,
-      ]),
-      IOE.flatMap(saveUser),
-    );
