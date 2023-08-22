@@ -1,16 +1,16 @@
 import crypto from 'node:crypto';
-import * as f from 'fp-ts/function';
 import * as E from 'fp-ts/Either';
-import * as _ from './user';
+import * as f from 'fp-ts/function';
 import {
-  InvalidUserEmail,
-  InvalidUserName,
-  UserEmail,
-  UserId,
-  UserName,
+  type InvalidUserEmail,
+  type InvalidUserName,
+  type UserEmail,
+  type UserId,
+  type UserName,
   reconstructUser,
 } from '../domain/user';
 import { deepStrictEqual } from '../utils/testing';
+import * as _ from './user';
 
 describe('createUser', () => {
   beforeEach(() => {

@@ -1,5 +1,5 @@
-import * as f from 'fp-ts/function';
 import * as E from 'fp-ts/Either';
+import * as f from 'fp-ts/function';
 import { deepStrictEqual, mustRight } from './testing';
 
 describe('deepStrictEqual', () => {

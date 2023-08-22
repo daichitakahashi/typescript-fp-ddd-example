@@ -1,19 +1,19 @@
 import crypto from 'node:crypto';
 import * as E from 'fp-ts/Either';
+import { deepStrictEqual } from '../utils/testing';
 import {
+  type InvalidUserId,
+  type InvalidUserName,
+  type InvalidUserEmail,
+  type UserName,
+  type UserEmail,
+  type UserId,
   createUser,
   validateUserId,
-  InvalidUserId,
-  InvalidUserName,
-  InvalidUserEmail,
   reconstructUser,
-  UserName,
-  UserEmail,
-  UserId,
   validateUserName,
   validateUserEmail,
 } from './user';
-import { deepStrictEqual } from '../utils/testing';
 
 describe('ユーザーID', () => {
   it('作成したユーザーIDが意図した値を持つ', () => {

@@ -2,8 +2,8 @@ export type ErrorSet = { type: string };
 
 export type ErrorType<
   Type extends string,
-  Props extends {} | undefined = undefined,
-> = Props extends {}
+  Props extends object | undefined = undefined,
+> = Props extends object
   ? {
       type: Type;
     } & Props
