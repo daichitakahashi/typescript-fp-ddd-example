@@ -4,36 +4,56 @@ import * as _ from '../domain/user';
 
 export type UserCreated = Readonly<{
   eventName: 'UserCreated';
-  name: string;
-  email: string;
+  name: _.UserName;
+  email: _.UserEmail;
 }>;
 export type UserProfileUpdated = Readonly<{
   eventName: 'UserProfileUpdated';
-  name: string;
-  email: string;
+  name: _.UserName;
+  email: _.UserEmail;
 }>;
-export type UserEvent = UserCreated | UserProfileUpdated;
+export type UserEvent = {
+  artifact: _.User;
+  event: UserCreated | UserProfileUpdated;
+};
 
-export const createUser = f.flow(
-  _.createUser,
-  E.map((user) => [
-    {
-      eventName: 'UserCreated',
-      name: user.name,
-      email: user.email,
-    } satisfies UserCreated,
-  ]),
-);
-
-export const updateUserProfile = (update: { name: string; email: string }) =>
-  f.flow(
-    _.changeUserName(update.name),
-    E.flatMap(_.changeUserEmail(update.email)),
-    E.map((user) => [
-      {
-        eventName: 'UserProfileUpdated',
-        name: user.name,
-        email: user.email,
-      } satisfies UserProfileUpdated,
-    ]),
+export const createUser = (props: { name: string; email: string }) =>
+  f.pipe(
+    E.Do,
+    E.bind('p', () => E.right(props)),
+    E.bindW('name', ({ p: { name } }) => _.validateUserName(name)),
+    E.bindW('email', ({ p: { email } }) => _.validateUserEmail(email)),
+    E.map(({ name, email }) => _.createUser({ name, email })),
+    E.map(
+      (user) =>
+        ({
+          artifact: user,
+          event: {
+            eventName: 'UserCreated',
+            name: user.name,
+            email: user.email,
+          } satisfies UserCreated,
+        }) satisfies UserEvent,
+    ),
   );
+
+export const updateUserProfile =
+  (update: { name: string; email: string }) => (user: _.User) =>
+    f.pipe(
+      E.Do,
+      E.bind('u', () => E.right(update)),
+      E.bindW('name', ({ u: { name } }) => _.validateUserName(name)),
+      E.bindW('email', ({ u: { email } }) => _.validateUserEmail(email)),
+      E.map(({ name, email }) => _.reconstructUser({ ...user, name, email })),
+      E.map(
+        (user) =>
+          ({
+            artifact: user,
+            event: {
+              eventName: 'UserProfileUpdated',
+              name: user.name,
+              email: user.email,
+            } satisfies UserProfileUpdated,
+          }) satisfies UserEvent,
+      ),
+    );

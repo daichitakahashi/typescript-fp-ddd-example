@@ -24,8 +24,8 @@ const generateUserId = () => randomUUID() as UserId;
 
 export class User extends Exclusive {
   readonly id: UserId;
-  readonly name: string;
-  readonly email: string;
+  readonly name: UserName;
+  readonly email: UserEmail;
   private constructor(props: UserProps) {
     super();
     this.id = props.id;
@@ -38,40 +38,40 @@ export type UserProps = Props<User>;
 
 const reconstructUserUnsafely = reconstructFunc<User, typeof User>(User);
 
+export type UserName = string & { readonly __brand: unique symbol };
+
 export type InvalidUserName = ErrorType<'InvalidUserName'>;
-const validateUserName = E.fromPredicate(
-  (user: User) => 5 <= user.name.length && user.name.length <= 20,
-  (): InvalidUserName => ({
-    type: 'InvalidUserName',
-  }),
+export const validateUserName = f.flow(
+  E.fromPredicate(
+    (name: string) => 5 <= name.length && name.length <= 20,
+    (): InvalidUserName => ({
+      type: 'InvalidUserName',
+    }),
+  ),
+  E.map((validated: string) => validated as UserName),
 );
 
+export type UserEmail = string & { readonly __brand: unique symbol };
+
 export type InvalidUserEmail = ErrorType<'InvalidUserEmail'>;
-const validateUserEmail = E.fromPredicate(
-  (user: User) =>
-    /^(([^<>()[\].,;:\s@"]+(\.[^<>()[\].,;:\s@"]+)*)|(".+"))@(([^<>()[\].,;:\s@"]+\.)+[^<>()[\].,;:\s@"]{2,})$/i.test(
-      user.email,
-    ),
-  (): InvalidUserEmail => ({
-    type: 'InvalidUserEmail',
-  }),
+export const validateUserEmail = f.flow(
+  E.fromPredicate(
+    (email: string) =>
+      /^(([^<>()[\].,;:\s@"]+(\.[^<>()[\].,;:\s@"]+)*)|(".+"))@(([^<>()[\].,;:\s@"]+\.)+[^<>()[\].,;:\s@"]{2,})$/i.test(
+        email,
+      ),
+    (): InvalidUserEmail => ({
+      type: 'InvalidUserEmail',
+    }),
+  ),
+  E.map((validated: string) => validated as UserEmail),
 );
 
 export const reconstructUser = (props: UserProps) =>
-  f.pipe(
-    E.right(reconstructUserUnsafely(props)),
-    E.flatMap(validateUserName),
-    E.flatMap(validateUserEmail),
-  );
+  reconstructUserUnsafely(props);
 
-export const createUser = (params: { name: string; email: string }) =>
+export const createUser = (params: { name: UserName; email: UserEmail }) =>
   reconstructUser({
     id: generateUserId(),
     ...params,
   });
-
-export const changeUserName = (name: string) => (user: User) =>
-  f.pipe(reconstructUserUnsafely({ ...user, name }), validateUserName);
-
-export const changeUserEmail = (email: string) => (user: User) =>
-  f.pipe(reconstructUserUnsafely({ ...user, email }), validateUserEmail);

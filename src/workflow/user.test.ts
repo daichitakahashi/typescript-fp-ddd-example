@@ -1,25 +1,61 @@
+import crypto from 'node:crypto';
 import * as f from 'fp-ts/function';
 import * as E from 'fp-ts/Either';
 import * as _ from './user';
 import {
   InvalidUserEmail,
   InvalidUserName,
+  UserEmail,
+  UserId,
+  UserName,
   reconstructUser,
-  validateUserId,
 } from '../domain/user';
 import { deepStrictEqual } from '../utils/testing';
 
 describe('createUser', () => {
+  beforeEach(() => {
+    const spy = jest.spyOn(crypto, 'randomUUID');
+    spy.mockReturnValue('5687625b-ecae-41e5-bb89-15fcc7d8c47e');
+  });
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   it('ユーザーを作成することができる', () => {
     deepStrictEqual(
       _.createUser({ name: 'user01', email: 'user01@example.com' }),
-      E.right([
-        {
+      E.right({
+        artifact: reconstructUser({
+          id: '5687625b-ecae-41e5-bb89-15fcc7d8c47e' as UserId,
+          name: 'user01' as UserName,
+          email: 'user01@example.com' as UserEmail,
+        }),
+        event: {
           eventName: 'UserCreated',
-          name: 'user01',
-          email: 'user01@example.com',
-        } satisfies _.UserCreated,
-      ]),
+          name: 'user01' as UserName,
+          email: 'user01@example.com' as UserEmail,
+        },
+      } satisfies _.UserEvent),
+    );
+  });
+
+  it('不正なユーザー名をもつユーザーを作成することはできない', () => {
+    deepStrictEqual(
+      _.createUser({
+        name: 'aaaa', // too short
+        email: 'user01@example.com',
+      }),
+      E.left({ type: 'InvalidUserName' } satisfies InvalidUserName),
+    );
+  });
+
+  it('不正なメールアドレスをもつユーザーを作成することはできない', () => {
+    deepStrictEqual(
+      _.createUser({
+        name: 'user01',
+        email: 'user01_at_example.com',
+      }),
+      E.left({ type: 'InvalidUserEmail' } satisfies InvalidUserEmail),
     );
   });
 });
@@ -28,48 +64,43 @@ describe('updateUserProfile', () => {
   it('プロフィールを変更することができる', () => {
     deepStrictEqual(
       f.pipe(
-        validateUserId('eb98e96c-f3e0-4416-a358-5b0825506d83'),
-        E.flatMap((userId) =>
-          reconstructUser({
-            id: userId,
-            name: 'user01',
-            email: 'user01@example.com',
-          }),
-        ),
-        E.flatMap(
-          _.updateUserProfile({
-            name: 'newUser01',
-            email: 'newUser01@example.com',
-          }),
-        ),
-      ),
-      E.right([
-        {
-          eventName: 'UserProfileUpdated',
+        reconstructUser({
+          id: 'fcea5e62-37d4-415e-8e44-2207389b7bc6' as UserId,
+          name: 'user01' as UserName,
+          email: 'user01@example.com' as UserEmail,
+        }),
+        _.updateUserProfile({
           name: 'newUser01',
           email: 'newUser01@example.com',
+        }),
+      ),
+      E.right({
+        artifact: reconstructUser({
+          id: 'fcea5e62-37d4-415e-8e44-2207389b7bc6' as UserId,
+          name: 'newUser01' as UserName,
+          email: 'newUser01@example.com' as UserEmail,
+        }),
+        event: {
+          eventName: 'UserProfileUpdated',
+          name: 'newUser01' as UserName,
+          email: 'newUser01@example.com' as UserEmail,
         } satisfies _.UserProfileUpdated,
-      ]),
+      } satisfies _.UserEvent),
     );
   });
 
   it('不正なユーザー名を使ってプロフィールを変更することはできない', () => {
     deepStrictEqual(
       f.pipe(
-        validateUserId('eb98e96c-f3e0-4416-a358-5b0825506d83'),
-        E.flatMap((userId) =>
-          reconstructUser({
-            id: userId,
-            name: 'user01',
-            email: 'user01@example.com',
-          }),
-        ),
-        E.flatMap(
-          _.updateUserProfile({
-            name: 'aaa', // too short
-            email: 'newUser01@example.com',
-          }),
-        ),
+        reconstructUser({
+          id: 'fcea5e62-37d4-415e-8e44-2207389b7bc6' as UserId,
+          name: 'user01' as UserName,
+          email: 'user01@example.com' as UserEmail,
+        }),
+        _.updateUserProfile({
+          name: 'aaaa', // too short
+          email: 'newUser01@example.com',
+        }),
       ),
       E.left({ type: 'InvalidUserName' } satisfies InvalidUserName),
     );
@@ -78,20 +109,15 @@ describe('updateUserProfile', () => {
   it('不正なメールアドレスを使ってプロフィールを変更することはできない', () => {
     deepStrictEqual(
       f.pipe(
-        validateUserId('eb98e96c-f3e0-4416-a358-5b0825506d83'),
-        E.flatMap((userId) =>
-          reconstructUser({
-            id: userId,
-            name: 'user01',
-            email: 'user01@example.com',
-          }),
-        ),
-        E.flatMap(
-          _.updateUserProfile({
-            name: 'newUser01',
-            email: 'newUser01_at_example.com',
-          }),
-        ),
+        reconstructUser({
+          id: 'fcea5e62-37d4-415e-8e44-2207389b7bc6' as UserId,
+          name: 'user01' as UserName,
+          email: 'user01@example.com' as UserEmail,
+        }),
+        _.updateUserProfile({
+          name: 'newUser01',
+          email: 'newUser01_at_example.com',
+        }),
       ),
       E.left({ type: 'InvalidUserEmail' } satisfies InvalidUserEmail),
     );

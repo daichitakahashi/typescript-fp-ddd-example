@@ -1,17 +1,19 @@
+import crypto from 'node:crypto';
 import * as E from 'fp-ts/Either';
-import * as f from 'fp-ts/function';
 import {
-  type User,
   createUser,
-  changeUserName,
-  changeUserEmail,
   validateUserId,
   InvalidUserId,
+  InvalidUserName,
   InvalidUserEmail,
   reconstructUser,
-  InvalidUserName,
+  UserName,
+  UserEmail,
+  UserId,
+  validateUserName,
+  validateUserEmail,
 } from './user';
-import { deepStrictEqual, mustRight } from '../utils/testing';
+import { deepStrictEqual } from '../utils/testing';
 
 describe('ユーザーID', () => {
   it('作成したユーザーIDが意図した値を持つ', () => {
@@ -29,151 +31,81 @@ describe('ユーザーID', () => {
   });
 });
 
-describe('ユーザー作成', () => {
-  it('作成したユーザーが意図した値を持つ', () => {
-    deepStrictEqual(
-      f.pipe(
-        createUser({
-          name: 'user01',
-          email: 'valid@example.com',
-        }),
-        E.map((user) => {
-          expect(user.id).toBeDefined();
-          return { name: user.name, email: user.email };
-        }),
-      ),
-      E.right({ name: 'user01', email: 'valid@example.com' }),
-    );
-  });
-
+describe('ユーザー名', () => {
   [
     { newName: 'aaaa', success: false }, // length=4
     { newName: 'aaaaa', success: true }, // length=5
     { newName: 'aaaaaaaaaaaaaaaaaaaa', success: true }, // length=20
     { newName: 'aaaaaaaaaaaaaaaaaaaaa', success: false }, // length=21
   ].forEach(({ newName, success }) => {
-    const user = createUser({
-      name: newName,
+    if (success) {
+      it(`長さが${newName.length}のユーザー名は妥当である`, () => {
+        deepStrictEqual(validateUserName(newName), E.right(newName));
+      });
+    } else {
+      it(`長さが${newName.length}のユーザー名は不正である`, () => {
+        deepStrictEqual(
+          validateUserName(newName),
+          E.left({ type: 'InvalidUserName' } satisfies InvalidUserName),
+        );
+      });
+    }
+  });
+});
+
+describe('ユーザーメールアドレス', () => {
+  [
+    { newEmail: 'valid@example.com', success: true },
+    { newEmail: 'invalid_at_example.com', success: false },
+  ].forEach(({ newEmail, success }) => {
+    if (success) {
+      it(`"${newEmail}"はメールアドレスとして妥当である`, () => {
+        deepStrictEqual(validateUserEmail(newEmail), E.right(newEmail));
+      });
+    } else {
+      it(`"${newEmail}"はメールアドレスとして不正である`, () => {
+        deepStrictEqual(
+          validateUserEmail(newEmail),
+          E.left({ type: 'InvalidUserEmail' } satisfies InvalidUserEmail),
+        );
+      });
+    }
+  });
+});
+
+describe('ユーザー作成', () => {
+  beforeEach(() => {
+    const spy = jest.spyOn(crypto, 'randomUUID');
+    spy.mockReturnValue('5687625b-ecae-41e5-bb89-15fcc7d8c47e');
+  });
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('作成したユーザーが期待された値を持つ', () => {
+    expect(
+      createUser({
+        name: 'user01' as UserName,
+        email: 'valid@example.com' as UserEmail,
+      }),
+    ).toMatchObject({
+      id: '5687625b-ecae-41e5-bb89-15fcc7d8c47e' as UserId,
+      name: 'user01' as UserName,
+      email: 'valid@example.com' as UserEmail,
+    });
+  });
+
+  it('再構築したユーザーが期待された値を持つ', () => {
+    expect(
+      reconstructUser({
+        id: '5687625b-ecae-41e5-bb89-15fcc7d8c47e' as UserId,
+        name: 'user01' as UserName,
+        email: 'valid@example.com' as UserEmail,
+      }),
+    ).toMatchObject({
+      id: '5687625b-ecae-41e5-bb89-15fcc7d8c47e',
+      name: 'user01',
       email: 'valid@example.com',
     });
-    if (success) {
-      it(`ユーザー名の長さが${newName.length}のユーザーを作成することができる`, () => {
-        deepStrictEqual(
-          f.pipe(
-            user,
-            E.map((user) => ({ name: user.name, email: user.email })),
-          ),
-          E.right({ name: newName, email: 'valid@example.com' }),
-        );
-      });
-    } else {
-      it(`ユーザー名の長さが${newName.length}のユーザーを作成することはできない`, () => {
-        deepStrictEqual(
-          user,
-          E.left({ type: 'InvalidUserName' } satisfies InvalidUserName),
-        );
-      });
-    }
-  });
-
-  [
-    { newEmail: 'valid@example.com', success: true },
-    { newEmail: 'invalid_at_example.com', success: false },
-  ].forEach(({ newEmail, success }) => {
-    const user = createUser({
-      name: 'user01',
-      email: newEmail,
-    });
-    if (success) {
-      it(`"${newEmail}"をメールアドレスとして持つユーザーを作成することができる`, () => {
-        deepStrictEqual(
-          f.pipe(
-            user,
-            E.map((user) => ({ name: user.name, email: user.email })),
-          ),
-          E.right({ name: 'user01', email: newEmail }),
-        );
-      });
-    } else {
-      it(`"${newEmail}"をメールアドレスとして持つユーザーを作成することはできない`, () => {
-        deepStrictEqual(
-          user,
-          E.left({ type: 'InvalidUserEmail' } satisfies InvalidUserEmail),
-        );
-      });
-    }
-  });
-});
-
-describe('ユーザー名変更', () => {
-  [
-    { newName: 'aaaa', success: false }, // length=4
-    { newName: 'aaaaa', success: true }, // length=5
-    { newName: 'aaaaaaaaaaaaaaaaaaaa', success: true }, // length=20
-    { newName: 'aaaaaaaaaaaaaaaaaaaaa', success: false }, // length=21
-  ].forEach(({ newName, success }) => {
-    const user = f.pipe(
-      createUser({
-        name: 'user01',
-        email: 'valid@example.com',
-      }),
-      mustRight(),
-    );
-    const result = f.pipe(user, changeUserName(newName));
-
-    if (success) {
-      it(`ユーザー名の長さが${newName.length}のユーザーを作成することができる`, () => {
-        deepStrictEqual(
-          result,
-          reconstructUser({
-            id: user.id,
-            name: newName,
-            email: 'valid@example.com',
-          }),
-        );
-      });
-    } else {
-      it(`ユーザー名の長さが${newName.length}のユーザーを作成することはできない`, () => {
-        deepStrictEqual(
-          result,
-          E.left({ type: 'InvalidUserName' } satisfies InvalidUserName),
-        );
-      });
-    }
-  });
-});
-
-describe('メールアドレス変更', () => {
-  [
-    { newEmail: 'valid@example.com', success: true },
-    { newEmail: 'invalid_at_example.com', success: false },
-  ].forEach(({ newEmail, success }) => {
-    const user = f.pipe(
-      createUser({
-        name: 'user01',
-        email: 'valid@example.com',
-      }),
-      mustRight(),
-    );
-    const result = f.pipe(user, changeUserEmail(newEmail));
-
-    if (success) {
-      it(`"${newEmail}"をメールアドレスとして持つユーザーを作成することができる`, () => {
-        deepStrictEqual(
-          f.pipe(
-            result,
-            E.map((user) => ({ name: user.name, email: user.email })),
-          ),
-          E.right({ name: 'user01', email: newEmail }),
-        );
-      });
-    } else {
-      it(`"${newEmail}"をメールアドレスとして持つユーザーを作成することはできない`, () => {
-        deepStrictEqual(
-          result,
-          E.left({ type: 'InvalidUserEmail' } satisfies InvalidUserEmail),
-        );
-      });
-    }
   });
 });
