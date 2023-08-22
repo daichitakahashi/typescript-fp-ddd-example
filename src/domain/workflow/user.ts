@@ -14,8 +14,9 @@ export type UserProfileUpdated = Readonly<{
 }>;
 export type UserEvent = {
   artifact: _.User;
-  event: UserCreated | UserProfileUpdated;
+  event: UserEventType;
 };
+export type UserEventType = UserCreated | UserProfileUpdated;
 
 export const createUser = (props: { name: string; email: string }) =>
   f.pipe(
