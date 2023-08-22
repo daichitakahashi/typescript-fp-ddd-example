@@ -1,6 +1,6 @@
 import * as E from 'fp-ts/Either';
 import * as f from 'fp-ts/function';
-import * as _ from '../domain/user';
+import * as _ from '../user';
 
 export type UserCreated = Readonly<{
   eventName: 'UserCreated';
