@@ -1,7 +1,9 @@
 import * as E from 'fp-ts/Either';
 
-export const deepStrictEqual = <A>(actual: A, expected: A) =>
+export const deepStrictEqual = <A>(actual: A, expected: A) => {
   expect(actual).toStrictEqual(expected);
+  return actual;
+};
 
 export const mustRight = <Right>() =>
   E.match<unknown, Right, Right>(
