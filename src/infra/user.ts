@@ -1,5 +1,5 @@
 import { type User, type UserId } from '../domain/user';
-import { type UserEvent } from '../domain/workflow/user';
+import { type UserEventType } from '../domain/workflow/user';
 import { type ErrorType } from '../error';
 import type * as IOE from 'fp-ts/IOEither';
 
@@ -11,5 +11,5 @@ export interface GetUser {
 }
 
 export interface SaveUser {
-  (events: UserEvent[]): IOE.IOEither<IOError, void>;
+  (events: UserEventType[]): (userId: UserId) => IOE.IOEither<IOError, void>;
 }

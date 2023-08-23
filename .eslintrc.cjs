@@ -1,3 +1,6 @@
+/**
+ * @type {import("eslint").Linter.Config}
+ */
 module.exports = {
   'env': {
     'browser': true,
@@ -5,7 +8,8 @@ module.exports = {
   },
   'extends': [
     'eslint:recommended',
-    'plugin:@typescript-eslint/recommended'
+    'plugin:@typescript-eslint/recommended',
+    'prettier'
   ],
   'overrides': [
     {
@@ -31,11 +35,6 @@ module.exports = {
   ],
   'ignorePatterns': ['*.cjs'],
   'rules': {
-    'indent': [
-      'error',
-      2,
-      { 'SwitchCase': 1 }
-    ],
     'linebreak-style': [
       'error',
       'unix'
@@ -58,11 +57,6 @@ module.exports = {
             group: 'builtin',
             position: 'before',
           },
-          // {
-          //   pattern: '{./**,../**}',
-          //   group: 'parent',
-          //   position: 'before',
-          // },
         ],
         pathGroupsExcludedImportTypes: ['builtin'],
         alphabetize: {

@@ -8,35 +8,58 @@ import { type UserEventType } from '../../domain/workflow/user';
 import { type UserNotFound, type GetUser, type SaveUser } from '../user';
 
 export class UserStore {
-  userSnapshot = new Map<UserId, User>();
-  userEvents = new Map<UserId, UserEventType[]>();
+  private userSnapshot = new Map<UserId, User>();
+  private userEvents = new Map<UserId, UserEventType[]>();
 
   readonly getUser: GetUser = f.flow(
     IOE.right<never, UserId>,
     IOE.bindTo('userId'),
     IOE.bind('snapshot', ({ userId }) =>
       f.pipe(
-        userId,
-        this.userSnapshot.get,
+        this.userSnapshot.get(userId),
         O.fromNullable,
         IOE.fromOption(() => ({ type: 'UserNotFound' }) satisfies UserNotFound),
       ),
     ),
     IOE.bindW('events', ({ userId }) =>
-      f.pipe(userId, this.userEvents.get, IOE.right),
+      f.pipe(this.userEvents.get(userId), IOE.right),
     ),
-    IOE.map(({ snapshot, events }) => replay(events ?? [])(snapshot)),
+    IOE.map(({ snapshot, events }) => replayUser(events ?? [])(snapshot)),
   );
 
-  readonly saveUser: SaveUser = null as unknown as SaveUser;
+  readonly saveUser: SaveUser = (events: UserEventType[]) => (userId: UserId) =>
+    f.pipe(this.userSnapshot.has(userId), (exists) =>
+      exists
+        ? // append events
+          f.pipe(
+            this.userEvents.get(userId),
+            (e) =>
+              IOE.right(this.userEvents.set(userId, [...(e ?? []), ...events])),
+            IOE.asUnit,
+          )
+        : // save snapshot
+          f.pipe(
+            events,
+            replayUser,
+            f.apply({ id: userId } as User),
+            (user) => IOE.right(this.userSnapshot.set(userId, user)),
+            IOE.asUnit,
+          ),
+    );
 }
 
-const replay = (events: UserEventType[]) => (user: User) =>
+const replayUser = (events: UserEventType[]) => (user: User) =>
   f.pipe(
     events,
     A.reduce(user, (curUser, e) =>
       match(e)
-        .with({ eventName: 'UserCreated' }, () => curUser)
+        .with({ eventName: 'UserCreated' }, ({ name, email }) =>
+          reconstructUser({
+            ...curUser,
+            name,
+            email,
+          }),
+        )
         .with({ eventName: 'UserProfileUpdated' }, ({ name, email }) =>
           reconstructUser({
             ...curUser,
