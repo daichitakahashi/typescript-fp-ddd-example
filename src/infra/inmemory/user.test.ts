@@ -1,4 +1,4 @@
-import * as IOE from 'fp-ts/IOEither';
+import * as TE from 'fp-ts/TaskEither';
 import * as f from 'fp-ts/function';
 import {
   type UserName,
@@ -17,24 +17,24 @@ describe('UserStore', () => {
 
     deepStrictEqual(
       store.getUser('539cd03e-90b3-4183-9000-6239971833b0' as UserId)(),
-      IOE.left({ type: 'UserNotFound' } satisfies UserNotFound)(),
+      TE.left({ type: 'UserNotFound' } satisfies UserNotFound)(),
     );
   });
 
-  it('ユーザー情報を適切に保存/取得することができる', () => {
+  it('ユーザー情報を適切に保存/取得することができる', async () => {
     const store = new UserStore();
     const userId = '539cd03e-90b3-4183-9000-6239971833b0' as UserId;
 
     // ユーザー作成
-    const createdUser = deepStrictEqual(
+    const createdUser = await deepStrictEqual(
       f.pipe(
         { name: 'user01', email: 'user01@example.com' },
         createUser, // ユーザーを作成
-        IOE.fromEither,
-        IOE.flatMap((e) => f.pipe(userId, store.saveUser([e.event]))), // 作成したユーザーを保存
-        IOE.flatMap(() => f.pipe(userId, store.getUser)), // 保存したユーザーを取得
+        TE.fromEither,
+        TE.flatMap((e) => f.pipe(userId, store.saveUser([e.event]))), // 作成したユーザーを保存
+        TE.flatMap(() => f.pipe(userId, store.getUser)), // 保存したユーザーを取得
       )(),
-      IOE.right(
+      TE.right(
         reconstructUser({
           id: userId,
           name: 'user01' as UserName,
@@ -47,16 +47,16 @@ describe('UserStore', () => {
     deepStrictEqual(
       f.pipe(
         createdUser,
-        mustRight(),
+        mustRight,
         updateUserProfile({
           name: 'newUser01',
           email: 'newUser01@example.com',
         }),
-        IOE.fromEither,
-        IOE.flatMap((e) => f.pipe(userId, store.saveUser([e.event]))),
-        IOE.flatMap(() => f.pipe(userId, store.getUser)), // 保存したユーザーを取得
+        TE.fromEither,
+        TE.flatMap((e) => f.pipe(userId, store.saveUser([e.event]))),
+        TE.flatMap(() => f.pipe(userId, store.getUser)), // 保存したユーザーを取得
       )(),
-      IOE.right(
+      TE.right(
         reconstructUser({
           id: userId,
           name: 'newUser01' as UserName,

@@ -21,11 +21,11 @@ describe('deepStrictEqual', () => {
 
 describe('mustRight', () => {
   it('rightの値を取り出すことができる', () => {
-    expect(f.pipe(E.right(9), mustRight())).toBe(9);
+    expect(f.pipe(E.right(9), mustRight)).toBe(9);
   });
   it('leftの場合例外をスローする', () => {
     expect(() => {
-      f.pipe(E.left(null), mustRight());
+      f.pipe(E.left(null), mustRight);
     }).toThrow();
   });
 });
