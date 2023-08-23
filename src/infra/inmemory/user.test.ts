@@ -26,15 +26,15 @@ describe('UserStore', () => {
     const userId = '539cd03e-90b3-4183-9000-6239971833b0' as UserId;
 
     // ユーザー作成
-    const createdUser = await deepStrictEqual(
-      f.pipe(
+    const createdUser = deepStrictEqual(
+      await f.pipe(
         { name: 'user01', email: 'user01@example.com' },
         createUser, // ユーザーを作成
         TE.fromEither,
         TE.flatMap((e) => f.pipe(userId, store.saveUser([e.event]))), // 作成したユーザーを保存
         TE.flatMap(() => f.pipe(userId, store.getUser)), // 保存したユーザーを取得
       )(),
-      TE.right(
+      await TE.right(
         reconstructUser({
           id: userId,
           name: 'user01' as UserName,
@@ -45,7 +45,7 @@ describe('UserStore', () => {
 
     // ユーザープロフィール更新
     deepStrictEqual(
-      f.pipe(
+      await f.pipe(
         createdUser,
         mustRight,
         updateUserProfile({
@@ -56,7 +56,7 @@ describe('UserStore', () => {
         TE.flatMap((e) => f.pipe(userId, store.saveUser([e.event]))),
         TE.flatMap(() => f.pipe(userId, store.getUser)), // 保存したユーザーを取得
       )(),
-      TE.right(
+      await TE.right(
         reconstructUser({
           id: userId,
           name: 'newUser01' as UserName,
