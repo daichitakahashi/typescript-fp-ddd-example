@@ -5,7 +5,7 @@ import * as f from 'fp-ts/function';
 import { type Hono } from 'hono';
 import { createUser } from '../domain/workflow/user';
 import { UserStore } from '../infra/inmemory/user';
-import { showUser } from './userDetail';
+import { userDetail } from './userDetail';
 import { listUser } from './userList';
 
 const addUser =
@@ -39,7 +39,7 @@ export const registerRoutes = async (app: Hono) => {
         throw err;
       },
       // routes
-      (users) => f.pipe(app, listUser(users), showUser(store)),
+      (users) => f.pipe(app, listUser(users), userDetail(store)),
     ),
   )();
 };

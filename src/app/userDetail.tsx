@@ -4,8 +4,8 @@ import { type Hono } from 'hono';
 import { type UserId } from '../domain/user';
 import { type UserStore } from '../infra/inmemory/user';
 
-export const showUser = (store: UserStore) => (app: Hono) =>
-  app.get('/user/:userId', async (c) => {
+export const userDetail = (store: UserStore) => (app: Hono) =>
+  app.get('/users/:userId', async (c) => {
     const userId = c.req.param('userId');
     const text = await f.pipe(
       userId as UserId, // workaround

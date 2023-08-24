@@ -9,7 +9,7 @@ export const listUser = (users: User[]) => (app: Hono) =>
         <ul>
           {users.map((user) => (
             <li>
-              <a href={`/user/${user.id}`}>{user.name}</a>
+              <a href={`/users/${user.id}`}>{user.name}</a>
             </li>
           ))}
         </ul>
