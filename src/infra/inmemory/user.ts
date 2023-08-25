@@ -10,10 +10,22 @@ import {
 } from '../../user/command';
 import { reconstructUser, type User, type UserId } from '../../user/domain';
 import { type UserEventType } from '../../user/domain/workflow';
+import type * as T from 'fp-ts/Task';
+
+export interface CapturedUserEvent {
+  userId: UserId;
+  events: UserEventType[];
+}
+
+// For local CDC
+export interface CaptureUserEvent {
+  (e: CapturedUserEvent): T.Task<void>;
+}
 
 export class UserStore {
   private userSnapshot = new Map<UserId, User>();
   private userEvents = new Map<UserId, UserEventType[]>();
+  constructor(private cdc: CaptureUserEvent) {}
 
   readonly getUser: GetUser = f.flow(
     TE.right<never, UserId>,
@@ -32,22 +44,27 @@ export class UserStore {
   );
 
   readonly saveUser: SaveUser = (events: UserEventType[]) => (userId: UserId) =>
-    f.pipe(this.userSnapshot.has(userId), (exists) =>
-      exists
-        ? // append events
-          f.pipe(
-            this.userEvents.get(userId),
-            (e) =>
-              TE.right(this.userEvents.set(userId, [...(e ?? []), ...events])),
-            TE.asUnit,
-          )
-        : // save snapshot
-          f.pipe(
-            { id: userId } as User,
-            replayUser(events),
-            (user) => TE.right(this.userSnapshot.set(userId, user)),
-            TE.asUnit,
-          ),
+    f.pipe(
+      this.userSnapshot.has(userId),
+      (exists) =>
+        exists
+          ? // append events
+            f.pipe(
+              this.userEvents.get(userId),
+              (e) =>
+                TE.right(
+                  this.userEvents.set(userId, [...(e ?? []), ...events]),
+                ),
+              TE.asUnit,
+            )
+          : // save snapshot
+            f.pipe(
+              { id: userId } as User,
+              replayUser(events),
+              (user) => TE.right(this.userSnapshot.set(userId, user)),
+              TE.asUnit,
+            ),
+      TE.flatMapTask(() => this.cdc({ userId, events })),
     );
 }
 
