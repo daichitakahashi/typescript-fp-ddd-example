@@ -74,15 +74,10 @@ describe('ユーザーメールアドレス', () => {
 });
 
 describe('ユーザー作成', () => {
-  beforeEach(() => {
+  it('作成したユーザーが期待された値を持つ', () => {
     const spy = jest.spyOn(crypto, 'randomUUID');
     spy.mockReturnValue('5687625b-ecae-41e5-bb89-15fcc7d8c47e');
-  });
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
 
-  it('作成したユーザーが期待された値を持つ', () => {
     expect(
       createUser({
         name: 'user01' as UserName,

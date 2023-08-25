@@ -4,4 +4,5 @@
     "source.addMissingImports",
     "source.fixAll.eslint",
   ],
+  "typescript.tsdk": "node_modules/typescript/lib",
 }

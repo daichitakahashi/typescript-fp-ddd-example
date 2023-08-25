@@ -13,15 +13,10 @@ import { deepStrictEqual } from '../../../utils/testing';
 import * as _ from './';
 
 describe('createUser', () => {
-  beforeEach(() => {
+  it('ユーザーを作成することができる', () => {
     const spy = jest.spyOn(crypto, 'randomUUID');
     spy.mockReturnValue('5687625b-ecae-41e5-bb89-15fcc7d8c47e');
-  });
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
 
-  it('ユーザーを作成することができる', () => {
     deepStrictEqual(
       _.createUser({ name: 'user01', email: 'user01@example.com' }),
       E.right({
