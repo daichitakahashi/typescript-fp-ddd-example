@@ -1,4 +1,5 @@
-import { type UserEventType } from '../domain/workflow';
+import { type ErrorType } from '../../error';
+import type * as TE from 'fp-ts/TaskEither';
 
 export type User = {
   id: string;
@@ -6,6 +7,15 @@ export type User = {
   email: string;
 };
 
-export interface CaptureUserEvent {
-  (event: UserEventType): void;
+export type IOError = ErrorType<
+  'IOError',
+  {
+    error: Error;
+  }
+>;
+export type UserNotFound = ErrorType<'UserNotFound'>;
+
+export interface UserQuery {
+  findById(userId: string): TE.TaskEither<IOError | UserNotFound, User>;
+  list(): TE.TaskEither<IOError, User[]>;
 }
