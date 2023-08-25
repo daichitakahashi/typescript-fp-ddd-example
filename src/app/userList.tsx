@@ -1,5 +1,5 @@
 import { type Hono } from 'hono';
-import { type User } from '../domain/user';
+import { type User } from '../user/domain';
 
 export const listUser = (users: User[]) => (app: Hono) =>
   app.get('/', (c) =>

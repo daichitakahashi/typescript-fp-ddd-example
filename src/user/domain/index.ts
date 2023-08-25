@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import * as E from 'fp-ts/Either';
 import * as f from 'fp-ts/function';
-import { type ErrorType } from '../error';
+import { type ErrorType } from '../../error';
 import { Exclusive, reconstructFunc, type Props } from './base';
 
 export type UserId = string & { readonly __brand: unique symbol };

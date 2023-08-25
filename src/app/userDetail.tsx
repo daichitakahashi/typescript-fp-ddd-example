@@ -1,8 +1,8 @@
 import * as TE from 'fp-ts/TaskEither';
 import * as f from 'fp-ts/function';
 import { type Hono } from 'hono';
-import { type UserId } from '../domain/user';
 import { type UserStore } from '../infra/inmemory/user';
+import { type UserId } from '../user/domain';
 
 export const userDetail = (store: UserStore) => (app: Hono) =>
   app.get('/users/:userId', async (c) => {

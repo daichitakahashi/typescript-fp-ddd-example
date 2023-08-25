@@ -1,14 +1,14 @@
 import * as TE from 'fp-ts/TaskEither';
 import * as f from 'fp-ts/function';
+import { type UserNotFound } from '../../user/command';
 import {
   type UserName,
   type UserId,
   type UserEmail,
   reconstructUser,
-} from '../../domain/user';
-import { createUser, updateUserProfile } from '../../domain/workflow/user';
+} from '../../user/domain/';
+import { createUser, updateUserProfile } from '../../user/domain/workflow';
 import { deepStrictEqual, mustRight } from '../../utils/testing';
-import { type UserNotFound } from '../user';
 import { UserStore } from './user';
 
 describe('UserStore', () => {
