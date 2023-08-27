@@ -3,7 +3,7 @@ import * as T from 'fp-ts/Task';
 import * as TE from 'fp-ts/TaskEither';
 import * as f from 'fp-ts/function';
 import { type Hono } from 'hono';
-import { UserStore } from '../infra/inmemory/user';
+import { UserStore } from '../infra/inmemory/user-command';
 import * as command from '../user/command';
 import { userDetail } from './userDetail';
 import { listUser } from './userList';

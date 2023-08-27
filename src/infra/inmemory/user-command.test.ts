@@ -15,7 +15,7 @@ import {
   type UserProfileUpdated,
 } from '../../user/domain/workflow';
 import { deepStrictEqual, mustRight } from '../../utils/testing';
-import { UserStore, type CapturedUserEvent } from './user';
+import { UserStore, type CapturedUserEvent } from './user-command';
 
 describe('UserStore', () => {
   it('作成されていないユーザーの取得に失敗する', () => {
