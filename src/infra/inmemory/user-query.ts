@@ -5,7 +5,7 @@ import * as f from 'fp-ts/function';
 import * as TE from 'fp-ts/lib/TaskEither';
 import { match } from 'ts-pattern';
 import { type CaptureUserEvent } from './user-command';
-import type * as _ from '../../user/query';
+import type * as _ from '@/user/query';
 
 export class UserQuery implements _.UserQuery {
   private users = new Map<string, _.User>();

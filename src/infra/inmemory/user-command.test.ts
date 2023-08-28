@@ -2,20 +2,20 @@ import crypto from 'node:crypto';
 import * as T from 'fp-ts/Task';
 import * as TE from 'fp-ts/TaskEither';
 import * as f from 'fp-ts/function';
-import { type UserNotFound } from '../../user/command';
-import * as command from '../../user/command';
+import { UserStore, type CapturedUserEvent } from './user-command';
+import * as command from '@/user/command';
+import { type UserNotFound } from '@/user/command';
 import {
   type UserName,
   type UserId,
   type UserEmail,
   reconstructUser,
-} from '../../user/domain';
+} from '@/user/domain';
 import {
   type UserCreated,
   type UserProfileUpdated,
-} from '../../user/domain/workflow';
-import { deepStrictEqual, mustRight } from '../../utils/testing';
-import { UserStore, type CapturedUserEvent } from './user-command';
+} from '@/user/domain/workflow';
+import { deepStrictEqual, mustRight } from '@/utils/testing';
 
 describe('UserStore', () => {
   it('作成されていないユーザーの取得に失敗する', () => {

@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
 import * as E from 'fp-ts/Either';
 import * as f from 'fp-ts/function';
+import * as _ from './';
 import {
   type InvalidUserEmail,
   type InvalidUserName,
@@ -8,9 +9,8 @@ import {
   type UserId,
   type UserName,
   reconstructUser,
-} from '../';
-import { deepStrictEqual } from '../../../utils/testing';
-import * as _ from './';
+} from '@/user/domain';
+import { deepStrictEqual } from '@/utils/testing';
 
 describe('createUser', () => {
   it('ユーザーを作成することができる', () => {

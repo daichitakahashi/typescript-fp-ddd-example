@@ -3,7 +3,7 @@ import * as TE from 'fp-ts/TaskEither';
 import * as f from 'fp-ts/function';
 import { type Hono } from 'hono';
 import { object, string, email, minLength, maxLength } from 'valibot';
-import { type addUser as addUserFunc } from '../user/command';
+import { type addUser as addUserFunc } from '@/user/command';
 
 const formWithError = (errorMessage?: string) => (
   <form action="/users" method="post">

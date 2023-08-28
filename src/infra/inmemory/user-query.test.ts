@@ -1,9 +1,9 @@
 import { deepStrictEqual } from 'assert';
 import * as TE from 'fp-ts/TaskEither';
-import { type UserName, type UserEmail, type UserId } from '../../user/domain';
-import { type UserCreated } from '../../user/domain/workflow';
-import { type User, type UserNotFound } from '../../user/query';
 import { UserQuery } from './user-query';
+import { type UserName, type UserEmail, type UserId } from '@/user/domain';
+import { type UserCreated } from '@/user/domain/workflow';
+import { type User, type UserNotFound } from '@/user/query';
 
 describe('UserQuery', () => {
   it('存在しないユーザーの取得に失敗する', async () => {

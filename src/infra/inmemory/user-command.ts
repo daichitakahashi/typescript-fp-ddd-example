@@ -3,14 +3,10 @@ import * as O from 'fp-ts/Option';
 import * as TE from 'fp-ts/TaskEither';
 import * as f from 'fp-ts/function';
 import { match } from 'ts-pattern';
-import {
-  type UserNotFound,
-  type GetUser,
-  type SaveUser,
-} from '../../user/command';
-import { reconstructUser, type User, type UserId } from '../../user/domain';
-import { type UserEventType } from '../../user/domain/workflow';
 import type * as T from 'fp-ts/Task';
+import { type UserNotFound, type GetUser, type SaveUser } from '@/user/command';
+import { reconstructUser, type User, type UserId } from '@/user/domain';
+import { type UserEventType } from '@/user/domain/workflow';
 
 export interface CapturedUserEvent {
   userId: UserId;

@@ -1,7 +1,7 @@
 import * as TE from 'fp-ts/TaskEither';
 import * as f from 'fp-ts/function';
 import { type Hono } from 'hono';
-import { type UserQuery } from '../infra/inmemory/user-query';
+import { type UserQuery } from '@/infra/inmemory/user-query';
 
 export const userList = (query: UserQuery) => (app: Hono) =>
   app.get(

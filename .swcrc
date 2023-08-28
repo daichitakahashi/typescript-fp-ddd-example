@@ -8,7 +8,13 @@
         },
         "target": "es2022",
         "loose": false,
-        "externalHelpers": false
+        "externalHelpers": false,
+        "baseUrl": ".",
+        "paths": {
+            "@/*": [
+                "./src/*"
+            ]
+        }
     },
     "minify": false
 }

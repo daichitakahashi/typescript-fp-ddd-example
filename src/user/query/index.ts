@@ -1,5 +1,5 @@
-import { type ErrorType } from '../../error';
 import type * as TE from 'fp-ts/TaskEither';
+import { type ErrorType } from '@/error';
 
 export type User = {
   id: string;

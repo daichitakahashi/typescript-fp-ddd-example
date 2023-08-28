@@ -1,8 +1,8 @@
 import * as TE from 'fp-ts/TaskEither';
 import * as f from 'fp-ts/function';
-import { type ErrorType } from '../../error';
-import { type User, type UserId } from '../domain';
-import * as workflow from '../domain/workflow';
+import { type ErrorType } from '@/error';
+import { type User, type UserId } from '@/user/domain';
+import * as workflow from '@/user/domain/workflow';
 
 export type IOError = ErrorType<'IOError'>;
 export type UserNotFound = ErrorType<'UserNotFound'>;
