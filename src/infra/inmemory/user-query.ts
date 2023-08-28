@@ -12,8 +12,7 @@ export class UserQuery implements _.UserQuery {
 
   findById(userId: string) {
     return f.pipe(
-      userId,
-      this.users.get,
+      this.users.get(userId),
       O.fromNullable,
       TE.fromOption(() => ({ type: 'UserNotFound' }) satisfies _.UserNotFound),
     );
@@ -25,8 +24,7 @@ export class UserQuery implements _.UserQuery {
 
   capture: CaptureUserEvent = ({ userId, events }) => {
     return f.pipe(
-      userId,
-      this.users.get,
+      this.users.get(userId),
       O.fromNullable,
       O.match(
         () => ({ id: userId, name: '', email: '' }) satisfies _.User,
