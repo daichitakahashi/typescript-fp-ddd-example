@@ -1,15 +1,16 @@
 import * as Ap from 'fp-ts/Apply';
-import * as T from 'fp-ts/Task';
 import * as TE from 'fp-ts/TaskEither';
 import * as f from 'fp-ts/function';
 import { type Hono } from 'hono';
 import { UserStore } from '../infra/inmemory/user-command';
+import { UserQuery } from '../infra/inmemory/user-query';
 import * as command from '../user/command';
 import { userDetail } from './userDetail';
-import { listUser } from './userList';
+import { userList } from './userList';
 
 export const registerRoutes = async (app: Hono) => {
-  const store = new UserStore(() => T.of(f.constVoid()));
+  const query = new UserQuery();
+  const store = new UserStore(query.capture);
   const addUser = command.addUser(store.saveUser);
 
   await f.pipe(
@@ -23,7 +24,7 @@ export const registerRoutes = async (app: Hono) => {
         throw err;
       },
       // routes
-      (users) => f.pipe(app, listUser(users), userDetail(store)),
+      () => f.pipe(app, userList(query), userDetail(store)),
     ),
   )();
 };
